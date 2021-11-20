@@ -51,7 +51,7 @@ pub fn get_stack_str() -> *mut MyValue {
 // Doesn't work. Not sure why
 // #[no_mangle]
 // pub fn get_heap_str() -> *mut MyValue {
-//     let mut str = String::from("Hello world!");
+//     let mut str = String::from("Yo!");
 //     let ptr = str.as_mut_ptr();
 //     std::mem::forget(ptr);
 //     let myval = Box::new(MyValue::new(ptr, str.len()));
