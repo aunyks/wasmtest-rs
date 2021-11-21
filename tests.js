@@ -18,7 +18,7 @@ WebAssembly.instantiate(wasmbuf).then((mod) => {
   add = mod.instance.exports.add
   console.log(add(1, 2), '\n')
 
-  // gree() returns just a pointer to a string in memory.
+  // greet() returns just a pointer to a string in memory.
   // Since we don't know its length, we just hope we get it right,
   // risking not getting the entire string or getting too many bytes in the process
   console.log('Testing greet()')
