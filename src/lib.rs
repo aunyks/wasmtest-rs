@@ -12,8 +12,9 @@ pub fn add(a: i32, b: i32) -> i32 {
 
 #[no_mangle]
 pub fn greet() -> *mut u8 {
-    let ptr = String::from("Hello world!").as_mut_ptr();
-    std::mem::forget(ptr);
+    let mut str = String::from("Hello world!");
+    let ptr = str.as_mut_ptr();
+    std::mem::forget(str);
     ptr
 }
 
