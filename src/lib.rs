@@ -38,33 +38,64 @@ impl MyValue {
 
 #[no_mangle]
 pub fn get_stack_str() -> *mut MyValue {
-    let mut str = String::from("Hello world!");
-    let ptr = str.as_mut_ptr();
-    std::mem::forget(ptr);
-    let mut myval = MyValue::new(ptr, str.len());
+    let mut str: String = String::from("Hello world!");
+    let ptr: *mut u8 = str.as_mut_ptr();
+    let mut myval: MyValue = MyValue::new(ptr, str.len());
+    // prevent str's destructor from running
+    std::mem::forget(str);
     // https://doc.rust-lang.org/std/primitive.pointer.html#3-create-it-using-ptraddr_of
-    let myval_ptr = std::ptr::addr_of_mut!(myval);
-    std::mem::forget(myval_ptr);
+    let myval_ptr: *mut MyValue = std::ptr::addr_of_mut!(myval);
     myval_ptr
 }
 
-// Doesn't work. Not sure why
-// #[no_mangle]
-// pub fn get_heap_str() -> *mut MyValue {
-//     let mut str = String::from("Yo!");
-//     let ptr = str.as_mut_ptr();
-//     std::mem::forget(ptr);
-//     let myval = Box::new(MyValue::new(ptr, str.len()));
-//     // https://doc.rust-lang.org/std/primitive.pointer.html#3-create-it-using-ptraddr_of
-//     let myval_ptr = Box::into_raw(myval);
-//     std::mem::forget(myval_ptr);
-//     myval_ptr
-// }
+#[no_mangle]
+pub fn get_heap_str() -> *mut MyValue {
+    let mut str: String = String::from("Yo!");
+    let ptr: *mut u8 = str.as_mut_ptr();
+    let myval: Box<MyValue> = Box::new(MyValue::new(ptr, str.len()));
+    // prevent str's destructor from running
+    std::mem::forget(str);
+    // https://doc.rust-lang.org/std/primitive.pointer.html#3-create-it-using-ptraddr_of
+    let myval_ptr: *mut MyValue = Box::into_raw(myval);
+    myval_ptr
+}
 
-// #[cfg(test)]
-// mod tests {
-//     #[test]
-//     fn it_works() {
-//         assert_eq!("Hello world!", super::greet());
-//     }
-// }
+// More safe and Rusty implementation of the
+// above
+#[repr(C)]
+pub struct MyRustyValue<'a> {
+    str_bytes: &'a mut [u8],
+    len: usize,
+}
+
+impl MyRustyValue<'static> {
+    pub fn new(mut_ptr: &'static mut [u8], length: usize) -> MyRustyValue<'static> {
+        MyRustyValue {
+            str_bytes: mut_ptr,
+            len: length,
+        }
+    }
+}
+
+#[no_mangle]
+pub fn rusty_get_heap_str() -> Box<MyRustyValue<'static>> {
+    let str: String = String::from("Yo! But Rusty...");
+
+    let str_vec: Vec<u8> = str.into_bytes();
+
+    // converts Vec to mutable slice, leaking data, so the
+    // lifetime is 'static
+    //
+    // leak() says there's no way to recover its data. We'll try
+    // to use unsafely_dealloc() below anyway
+    let str_data: &'static mut [u8] = str_vec.leak();
+    let str_data_len = str_data.len();
+
+    Box::new(MyRustyValue::new(str_data, str_data_len))
+}
+
+#[no_mangle]
+pub unsafe fn unsafely_dealloc(ptr: *mut u8, size: usize) {
+    let data = Vec::from_raw_parts(ptr, size, size);
+    std::mem::drop(data);
+}

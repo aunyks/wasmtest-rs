@@ -16,3 +16,8 @@ cargo build --target wasm32-unknown-unknown
 ```
 node tests.js
 ```
+
+## Special thanks
+
+- Radu Matei (["A practical guide to WebAssembly memory"](https://radu-matei.com/blog/practical-guide-to-wasm-memory/#passing-arrays-to-rust-webassembly-modules))
+- u/Nathanfenner ([Their answer to my Reddit question](https://www.reddit.com/r/rust/comments/qyd6ml/comment/hlfmu7b/?utm_source=share&utm_medium=web2x&context=3))
