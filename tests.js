@@ -63,4 +63,42 @@ WebAssembly.instantiate(wasmbuf).then((mod) => {
   // unsafely_dealloc() *should in theory* free memory based on the pointer and memory size it's given, but since it's unsafe it may cause undefined behavior, especially
   // when trying to recover and free memory claimed to be irrecoverable, such as that given by Vector's leak() function
   // Also, WASM memory can't be freed at the moment (https://stackoverflow.com/a/51544868/5699288) so...I guess it'll grow until it's OOM?
+
+  console.log('Testing get_valid_option()')
+  get_valid_option = mod.instance.exports.get_valid_option
+  myOptionPtr = get_valid_option()
+  console.log('Returned Pointer Address:', myOptionPtr)
+  validOptionArr = new Uint8Array(
+    mod.instance.exports.memory.buffer,
+    myOptionPtr,
+    1
+  )
+  validOption = validOptionArr[0] === 1
+  console.log('Valid Option:', validOption)
+  myOptionValueArray = new Uint8Array(
+    mod.instance.exports.memory.buffer,
+    myOptionPtr + 4,
+    4
+  )
+  myOptionValue = getUint32LE(myOptionValueArray, 0)
+  console.log('Option Value:', myOptionValue, '\n')
+
+  console.log('Testing get_invalid_option()')
+  get_invalid_option = mod.instance.exports.get_invalid_option
+  myOptionPtr = get_invalid_option()
+  console.log('Returned Pointer Address:', myOptionPtr)
+  validOptionArr = new Uint8Array(
+    mod.instance.exports.memory.buffer,
+    myOptionPtr,
+    1
+  )
+  validOption = validOptionArr[0] === 1
+  console.log('Valid Option:', validOption)
+  myOptionValueArray = new Uint8Array(
+    mod.instance.exports.memory.buffer,
+    myOptionPtr + 4,
+    4
+  )
+  myOptionValue = getUint32LE(myOptionValueArray, 0)
+  console.log('Option Value:', myOptionValue, '\n')
 })

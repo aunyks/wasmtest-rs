@@ -100,3 +100,13 @@ pub unsafe fn unsafely_dealloc(ptr: *mut u8, size: usize) {
     let data = Vec::from_raw_parts(ptr, size, size);
     std::mem::drop(data);
 }
+
+#[no_mangle]
+pub fn get_valid_option() -> Box<Option<u32>> {
+    Box::new(Some(1024))
+}
+
+#[no_mangle]
+pub fn get_invalid_option() -> Box<Option<u32>> {
+    Box::new(None)
+}
